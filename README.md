@@ -1,4 +1,4 @@
-# christmas_tree
+# ChristmasTree
 
 christmas tree cli
 
