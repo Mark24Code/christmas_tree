@@ -166,7 +166,12 @@ class ChristmasTree
     system("clear")
   end
 
+  def reset_screen
+    system("reset")
+  end
+
   def draw
+    reset_screen
     while true
       clean_screen
       canvas
