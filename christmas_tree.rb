@@ -156,7 +156,6 @@ class ChristmasTree
 
   def draw_buffer
     @width = (@buffer.map {|l| real_width(l)}).max * @scale
-    puts @width
 
     @buffer.each do |buffer_line|
       printf line_process(buffer_line)
