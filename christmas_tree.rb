@@ -171,7 +171,7 @@ class ChristmasTree
   end
 
   def draw
-    reset_screen
+    # reset_screen
     while true
       clean_screen
       canvas
