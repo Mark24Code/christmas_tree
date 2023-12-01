@@ -1,14 +1,7 @@
 # frozen_string_literal: true
 
 require_relative "christmas_tree/version"
-
-require 'optparse'
 require 'curses'
-
-
-Curses.init_screen
-Curses.noecho
-Curses.curs_set(0)
 
 COLORS_ORDER = [
   :black, :red, :green, :yellow, :blue, :magenta, :cyan, :white,
@@ -54,6 +47,7 @@ module ChristmasTree
   class Tree
     CHAR_SPACE = ' '
     def initialize(name = nil, layer_count = 10)
+      init_curses
       @name = name
       @buffer_count = layer_count
       @scale = 3
@@ -63,6 +57,12 @@ module ChristmasTree
       @light_colors = COLORS_ORDER
       @speed = 3 # 3 times per second
       @width = nil
+    end
+
+    def init_curses
+      Curses.init_screen
+      Curses.noecho
+      Curses.curs_set(0)
     end
 
     def tree_crown

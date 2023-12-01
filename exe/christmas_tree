@@ -1,21 +1,23 @@
 #!/usr/bin/env ruby
-require 'curses'
-require_relative '../lib/christmas_tree'
+require 'optparse'
+
+options = {}
+OptionParser.new do |opts|
+  opts.banner = "Usage: christmas_tree [options]"
+
+  opts.on("-nNAME", "--name=NAME", "name") do |name|
+    options[:name] = name
+  end
+
+  opts.on("-mNAME", "--merry_to=NAME", "name") do |name|
+    options[:name] = name
+  end
+end.parse!
+
 
 begin
-  options = {}
-  OptionParser.new do |opts|
-    opts.banner = "Usage: example.rb [options]"
-
-    opts.on("-nNAME", "--name=NAME", "name") do |name|
-      options[:name] = name
-    end
-
-    opts.on("-mNAME", "--merry_to=NAME", "name") do |name|
-      options[:name] = name
-    end
-  end.parse!
-
+  require 'curses'
+  require_relative '../lib/christmas_tree'
   ChristmasTree::Tree.new(options[:name]).draw
 ensure
   Curses.close_screen
