@@ -9,10 +9,6 @@ System dependencies:
 - Ruby 3.0+
 - Ncurses: macos: `brew install ncurses`
 
-Ruby Gem:
-
-- Curses: `gem install curses``
-
 # local run
 
 `ruby christmas_tree.rb`
