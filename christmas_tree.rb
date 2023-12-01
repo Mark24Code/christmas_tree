@@ -29,156 +29,162 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-module FontStylePatch
-  RESET_COLOR = "\e[0m" #重置所有颜色和样式
-  COLORS = {
-    # https://ss64.com/nt/syntax-ansi.html
-    black:"\e[30m",
-    white:"\e[97m",
-    red:"\e[31m",
-    green:"\e[32m",
-    yellow:"\e[33m",
-    blue:"\e[34m",
-    magenta:"\e[35m",
-    cyan:"\e[36m",
-    gray:"\e[90m",
-    light_gray:"\e[37m",
-    light_red:"\e[91m",
-    light_green:"\e[92m",
-    light_yellow:"\e[93m",
-    light_blue:"\e[94m",
-    light_magenta:"\e[95m",
-    light_cyan:"\e[96m",
+require 'curses'
+Curses.init_screen
+Curses.noecho
+Curses.curs_set(0)
+COLORS_ORDER = [
+  :black, :red, :green, :yellow, :blue, :magenta, :cyan, :white,
+  :bright_black, :bright_red, :bright_green, :bright_yellow,
+  :bright_blue, :bright_magenta, :bright_cyan, :bright_white
+]
 
-    bold:"\e[1m",
-    underline:"\e[4m",
-    nounderline:"\e[24m",
-    reversetext:"\e[7m",
-  }
-  COLORS.keys.each do |color_name|
-    define_method(color_name) do
-      return "#{COLORS[color_name]}#{self}#{RESET_COLOR}"
-    end
+COLORS_MAP = {}
+Curses.start_color
+COLORS_ORDER.length.times { |i|
+  Curses.init_pair(i, i, 0)
+  COLORS_MAP[COLORS_ORDER[i]] = Curses.color_pair(i)
+}
+
+FONT_WEIGHT_MAP = {
+  normal: Curses::A_NORMAL,
+  bold: Curses::A_BOLD,
+}
+
+class Token
+  attr_accessor :content, :font_weight, :color_pair
+  def initialize(content, color_pair = nil, font_weight = nil)
+    @content = content
+    @font_weight = font_weight || :normal
+    @color_pair = color_pair || :white
   end
-end
 
+  def length
+    @content.length
+  end
 
-class String
-  include FontStylePatch
+  def draw(&block)
+    Curses.attron(COLORS_MAP[@color_pair] | FONT_WEIGHT_MAP[@font_weight] ){
+      yield @content
+    }
+  end
 end
 
 class ChristmasTree
   CHAR_SPACE = ' '
   def initialize(layer_count = 10)
-    @layer_count = layer_count
+    @buffer_count = layer_count
     @scale = 3
-    @layer = []
     @buffer = []
     @light_char = 'o'
-    @light_colors = [
-      :white,
-      :red,
-      :green,
-      :yellow,
-      :blue,
-      :magenta,
-      :cyan,
-      :gray,
-      :light_gray,
-      :light_red,
-      :light_green,
-      :light_yellow,
-      :light_blue,
-      :light_magenta,
-      :light_cyan,
-    ]
+    @snow_char = '*'
+    @light_colors = COLORS_ORDER
     @speed = 3 # 3 times per second
+    @width = nil
   end
 
   def tree_crown
-    (1..@layer_count).each do |count|
+    (1..@buffer_count).each do |count|
       total = 2*count-1
       index_arr = []
-      cache = []
+      line = []
 
       total.times.each do |i|
         index_arr.push(i)
-        cache << "*".green
+        line << Token.new("*", :green)
       end
 
-      random_count = (total * 0.3).to_i
-      random_count.times {
+
+
+      # snow
+      snow_random_count = (total * 0.3).to_i
+      snow_random_count.times {
         choose_index = index_arr.sample
-        cache[choose_index] = @light_char.__send__(@light_colors.sample)
+        line[choose_index] = Token.new(@snow_char, :white)
       }
-      @layer << cache.join("")
+
+      # light
+      light_random_count = (total * 0.3).to_i
+      light_random_count.times {
+        choose_index = index_arr.sample
+        line[choose_index] = Token.new(@light_char, @light_colors.sample)
+      }
+      @buffer << line
     end
   end
 
   def tree_trunk(height=2)
     height.times {
-      @layer << "mWm".white
+      @buffer << [Token.new("mWm", :white)]
     }
   end
 
   def footer_text
-    @layer << "MARRY CHRISTMAS".yellow
-    code_text = "CODE".split("").map {|c| c.bold.__send__(@light_colors.sample)}.join("")
-    text = "And lots of ".yellow + code_text + " in 2024".yellow
-    @layer << text
+    @buffer << [Token.new("MARRY CHRISTMAS", :yellow)]
+    line = [Token.new("And lots of ", :yellow)]
+    code_text = "CODE".split("").map {|c| Token.new(c, @light_colors.sample, :bold)}
+    code_text.each do |code|
+      line << code
+    end
+    line << Token.new(" in #{Time.now.year + 1}", :yellow)
+    @buffer << line
   end
 
   def border(height=4)
     height.times {
-      @layer << CHAR_SPACE
+      @buffer << [Token.new(CHAR_SPACE)]
     }
   end
 
-  def canvas
+  def draw_canvas
+    @buffer = []
     border(3)
     tree_crown
     tree_trunk
     footer_text
-    border
-    @buffer = @layer.clone
+    border(3)
+
+    if !@width
+      @width = (@buffer.map {|l| real_width(l)}).max * @scale
+    end
+
+    @buffer.each_with_index do |buffer_line,y|
+      x = (@width - real_width(buffer_line)) / 2
+      Curses.setpos(y, x)
+      buffer_line.each do |token|
+        token.draw do |text|
+          Curses.addstr(text)
+        end
+      end
+    end
   end
 
   def line_process(line)
     half_space = CHAR_SPACE * ((@width - real_width(line)) / 2)
-    "\r#{half_space}#{line}#{half_space}\n"
+    "#{half_space}#{line}#{half_space}"
   end
 
-  def real_width(text)
-    text2 = text.clone
-    text2 = text2.gsub(/\e\[(\d+)m/,'')
-    return text2.length
+  def real_width(line)
+    line.map {|token| token.length }.sum
   end
 
-  def draw_buffer
-    @width = (@buffer.map {|l| real_width(l)}).max * @scale
-
-    @buffer.each do |buffer_line|
-      printf line_process(buffer_line)
-    end
-  end
 
   def clean_screen
-    system("clear")
-  end
-
-  def reset_screen
-    system("reset")
+    Curses.clear
   end
 
   def draw
-    # reset_screen
+    clean_screen
     while true
-      clean_screen
-      canvas
-      draw_buffer
+      draw_canvas
+      Curses.refresh
       sleep 1.0/@speed
     end
   end
 end
 
-ChristmasTree.new.draw
+begin
+  ChristmasTree.new.draw
+ensure
+  Curses.close_screen
+end
