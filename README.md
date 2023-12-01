@@ -2,6 +2,14 @@
 
 christmas tree cli
 
+# dependency
+
+Ruby 3.0+
+
+Ncurses
+
+- macos: `brew install ncurses`
+
 # local run
 
 `ruby christmas_tree.rb`
