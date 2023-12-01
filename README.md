@@ -7,8 +7,9 @@ christmas tree cli
 System dependencies:
 
 - Ruby 3.0+
-- Ncurses: macos: `brew install ncurses`
-
+- Ncurses:
+  - Macos: `brew install ncurses`
+  - Linux: `apt install libncurses5-dev` or `apt install libncursesw5-dev`
 # local run
 
 `ruby christmas_tree.rb`
@@ -17,7 +18,7 @@ System dependencies:
 
 ## add your name
 
-`./christmas_tree.rb --name <your name>`
+`./christmas_tree.rb --merry_to <your name>`
 
 # remote run
 
@@ -27,7 +28,7 @@ System dependencies:
 
 ### add your name
 
-`gem exec christmas_tree --name=<yourname>`
+`gem exec christmas_tree --merry_to <yourname>`
 
 ## use Curl
 
@@ -35,7 +36,7 @@ System dependencies:
 
 ### add your name
 
-`ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Mark24Code/christmas_tree/main/christmas_tree.rb)" -- -n <your name>`
+`ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Mark24Code/christmas_tree/main/christmas_tree.rb)" -- --merry_to <your name>`
 
 # preview
 
