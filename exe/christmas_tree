@@ -1,0 +1,18 @@
+#!/usr/bin/env ruby
+require 'curses'
+require_relative '../lib/christmas_tree'
+
+begin
+  options = {}
+  OptionParser.new do |opts|
+    opts.banner = "Usage: example.rb [options]"
+
+    opts.on("-nNAME", "--name=NAME", "name") do |name|
+      options[:name] = name
+    end
+  end.parse!
+
+  ChristmasTree::Tree.new(options[:name]).draw
+ensure
+  Curses.close_screen
+end
