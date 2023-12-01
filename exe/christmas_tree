@@ -10,6 +10,10 @@ begin
     opts.on("-nNAME", "--name=NAME", "name") do |name|
       options[:name] = name
     end
+
+    opts.on("-mNAME", "--merry_to=NAME", "name") do |name|
+      options[:name] = name
+    end
   end.parse!
 
   ChristmasTree::Tree.new(options[:name]).draw
