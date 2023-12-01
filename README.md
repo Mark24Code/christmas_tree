@@ -4,11 +4,14 @@ christmas tree cli
 
 # dependency
 
-Ruby 3.0+
+System dependencies:
 
-Ncurses
+- Ruby 3.0+
+- Ncurses: macos: `brew install ncurses`
 
-- macos: `brew install ncurses`
+Ruby Gem:
+
+- Curses: `gem install curses``
 
 # local run
 
