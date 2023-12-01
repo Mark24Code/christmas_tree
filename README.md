@@ -25,6 +25,10 @@ System dependencies:
 
 `gem exec christmas_tree`
 
+### add your name
+
+`gem exec christmas_tree --name=<yourname>`
+
 ## use Curl
 
 `ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Mark24Code/christmas_tree/main/christmas_tree.rb)"`
