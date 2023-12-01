@@ -145,7 +145,7 @@ class ChristmasTree
 
   def line_process(line)
     half_space = CHAR_SPACE * ((@width - real_width(line)) / 2)
-    "\r#{half_space}#{line}#{half_space}\n"
+    "#{half_space}#{line}#{half_space}"
   end
 
   def real_width(text)
@@ -157,21 +157,18 @@ class ChristmasTree
   def draw_buffer
     @width = (@buffer.map {|l| real_width(l)}).max * @scale
 
-    @buffer.each do |buffer_line|
-      printf line_process(buffer_line)
-    end
+    screen = nil
+    screen_buffer = "\r" + @buffer.map {|line| line_process(line)}.join("\n")
+    printf screen_buffer
+    STDOUT.flush
   end
 
   def clean_screen
-    system("clear")
-  end
-
-  def reset_screen
-    system("reset")
+    # system("clear")
+    print("\033[H\033[J")
   end
 
   def draw
-    # reset_screen
     while true
       clean_screen
       canvas
