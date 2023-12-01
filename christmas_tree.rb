@@ -29,7 +29,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+require 'optparse'
 require 'curses'
+
 Curses.init_screen
 Curses.noecho
 Curses.curs_set(0)
@@ -72,7 +74,8 @@ end
 
 class ChristmasTree
   CHAR_SPACE = ' '
-  def initialize(layer_count = 10)
+  def initialize(name = nil, layer_count = 10)
+    @name = name
     @buffer_count = layer_count
     @scale = 3
     @buffer = []
@@ -119,11 +122,28 @@ class ChristmasTree
     }
   end
 
+
+  def color_tokens(text)
+    text.split("").map {|c| Token.new(c, @light_colors.sample, :bold)}
+  end
+
   def footer_text
     @buffer << [Token.new("MARRY CHRISTMAS", :yellow)]
+
+    # name
+    if @name
+      name = "@"+@name.strip
+      line = []
+      color_tokens(name).each do |code|
+        line << code
+      end
+
+      @buffer << line
+    end
+
+    # code
     line = [Token.new("And lots of ", :yellow)]
-    code_text = "CODE".split("").map {|c| Token.new(c, @light_colors.sample, :bold)}
-    code_text.each do |code|
+    color_tokens("CODE").each do |code|
       line << code
     end
     line << Token.new(" in #{Time.now.year + 1}", :yellow)
@@ -184,7 +204,16 @@ class ChristmasTree
 end
 
 begin
-  ChristmasTree.new.draw
+  options = {}
+  OptionParser.new do |opts|
+    opts.banner = "Usage: example.rb [options]"
+
+    opts.on("-nNAME", "--name=NAME", "name") do |name|
+      options[:name] = name
+    end
+  end.parse!
+
+  ChristmasTree.new(options[:name]).draw
 ensure
   Curses.close_screen
 end
