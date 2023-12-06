@@ -13,7 +13,7 @@ System dependencies:
 
 Gem dependencies
 
-below Ruby3.0 need to handle install gems:
+Ruby below 3.0, need install gems by manually:
 
 - Curses: `gem install curses`
 
