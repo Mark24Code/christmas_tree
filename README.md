@@ -10,6 +10,13 @@ System dependencies:
 - Ncurses:
   - Macos: `brew install ncurses`
   - Linux: `apt install libncurses5-dev` or `apt install libncursesw5-dev`
+
+Gem dependencies
+
+below Ruby3.0 need to handle install gems:
+
+- Curses: `gem install curses`
+
 # local run
 
 `ruby christmas_tree.rb`
