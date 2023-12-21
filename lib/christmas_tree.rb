@@ -65,6 +65,10 @@ module ChristmasTree
       Curses.curs_set(0)
     end
 
+    def tree_star
+      @buffer << [Token.new("★", :yellow, :bold)]
+    end
+
     def tree_crown
       (1..@buffer_count).each do |count|
         total = 2*count-1
@@ -138,6 +142,7 @@ module ChristmasTree
     def draw_canvas
       @buffer = []
       border(3)
+      tree_star
       tree_crown
       tree_trunk
       footer_text
