@@ -7,43 +7,44 @@ christmas tree cli
 System dependencies:
 
 - Ruby 3.0+
+  - MacOS: `brew install ruby`
+  - Linux: `apt install ruby`
 - Ncurses:
-  - Macos: `brew install ncurses`
+  - MacOS: `brew install ncurses`
   - Linux: `apt install libncurses5-dev` or `apt install libncursesw5-dev`
 
-Gem dependencies
+Gem dependencies:
+  below Ruby 3.0  need install gems manually:
+  
+  - `gem install curses`
 
-Ruby below 3.0, need install gems by manually:
+# Execution
 
-- Curses: `gem install curses`
+## Way 1: use GEM remote run
 
-# local run
-
-`ruby christmas_tree.rb`
-
-`./christmas_tree.rb`
-
-## add your name
-
-`./christmas_tree.rb --merry_to <your name>`
-
-# remote run
-
-## use GEM
 
 `gem exec christmas_tree`
 
-### add your name
 
-`gem exec christmas_tree --merry_to <yourname>`
+if you meet path trouble, use absolute brew ruby path:
 
-## use Curl
+`/usr/local/opt/ruby/bin/gem exec christmas_tree`
 
-`ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Mark24Code/christmas_tree/main/christmas_tree.rb)"`
 
-### add your name
+## Way 2: download it and execute on local machine
 
-`ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Mark24Code/christmas_tree/main/christmas_tree.rb)" -- --merry_to <your name>`
+Enter project directory: `cd <project_path>`
+
+Execute:
+
+`./christmas_tree.rb`
+
+
+# One more thing
+
+Add your name
+
+``./christmas_tree.rb --merry_to <your name>``
 
 # preview
 
