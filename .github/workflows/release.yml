@@ -1,0 +1,129 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'  # 当推送 v 开头的标签时触发，例如 v1.0.0
+  workflow_dispatch:  # 允许手动触发
+
+permissions:
+  contents: write  # 需要写入权限来创建 release
+
+jobs:
+  build:
+    name: Build for ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          # Linux
+          - os: ubuntu-latest
+            goos: linux
+            goarch: amd64
+            output_name: christmas_tree-linux-amd64
+          - os: ubuntu-latest
+            goos: linux
+            goarch: arm64
+            output_name: christmas_tree-linux-arm64
+
+          # macOS
+          - os: macos-latest
+            goos: darwin
+            goarch: amd64
+            output_name: christmas_tree-macos-amd64
+          - os: macos-latest
+            goos: darwin
+            goarch: arm64
+            output_name: christmas_tree-macos-arm64
+
+          # Windows
+          - os: windows-latest
+            goos: windows
+            goarch: amd64
+            output_name: christmas_tree-windows-amd64.exe
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+
+      - name: Get dependencies
+        run: |
+          go mod download
+          go mod verify
+
+      - name: Build
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          CGO_ENABLED: 0
+        run: |
+          go build -v -ldflags="-s -w" -o ${{ matrix.output_name }} .
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.output_name }}
+          path: ${{ matrix.output_name }}
+          retention-days: 1
+
+  release:
+    name: Create Release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./artifacts
+
+      - name: Display structure of downloaded files
+        run: ls -R ./artifacts
+
+      - name: Prepare release assets
+        run: |
+          mkdir -p release
+          find ./artifacts -type f -exec mv {} ./release/ \;
+          ls -lh ./release
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: release/*
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          body: |
+            ## 🎄 Christmas Tree Terminal Animation
+
+            Download the appropriate binary for your platform:
+            - **Linux AMD64**: `christmas_tree-linux-amd64`
+            - **Linux ARM64**: `christmas_tree-linux-arm64`
+            - **macOS Intel**: `christmas_tree-macos-amd64`
+            - **macOS Apple Silicon (M1/M2)**: `christmas_tree-macos-arm64`
+            - **Windows**: `christmas_tree-windows-amd64.exe`
+
+            ### Usage
+            ```bash
+            # Linux/macOS - make executable first
+            chmod +x christmas_tree-*
+            ./christmas_tree-linux-amd64
+
+            # With custom name
+            ./christmas_tree-linux-amd64 -name "YourName"
+
+            # Windows
+            christmas_tree-windows-amd64.exe
+            ```
+
+            ### Controls
+            - Press `ESC`, `Ctrl+C`, or `q` to exit
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
