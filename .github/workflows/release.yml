@@ -64,6 +64,10 @@ jobs:
         run: |
           go build -v -ldflags="-s -w" -o ${{ matrix.output_name }} .
 
+      - name: Set executable permissions (Unix)
+        if: matrix.goos != 'windows'
+        run: chmod +x ${{ matrix.output_name }}
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
@@ -91,6 +95,7 @@ jobs:
         run: |
           mkdir -p release
           find ./artifacts -type f -exec mv {} ./release/ \;
+          chmod +x release/christmas_tree-linux-* release/christmas_tree-macos-* 2>/dev/null || true
           ls -lh ./release
 
       - name: Create Release
