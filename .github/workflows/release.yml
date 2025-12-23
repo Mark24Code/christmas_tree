@@ -68,11 +68,30 @@ jobs:
         if: matrix.goos != 'windows'
         run: chmod +x ${{ matrix.output_name }}
 
-      - name: Upload artifact
+      - name: Package binary (Linux/macOS)
+        if: matrix.goos != 'windows'
+        run: |
+          tar -czf ${{ matrix.output_name }}.tar.gz ${{ matrix.output_name }}
+
+      - name: Package binary (Windows)
+        if: matrix.goos == 'windows'
+        run: |
+          7z a ${{ matrix.output_name }}.zip ${{ matrix.output_name }}
+
+      - name: Upload artifact (Unix)
+        if: matrix.goos != 'windows'
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.output_name }}
-          path: ${{ matrix.output_name }}
+          name: ${{ matrix.output_name }}-tar
+          path: ${{ matrix.output_name }}.tar.gz
+          retention-days: 1
+
+      - name: Upload artifact (Windows)
+        if: matrix.goos == 'windows'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.output_name }}-zip
+          path: ${{ matrix.output_name }}.zip
           retention-days: 1
 
   release:
@@ -94,8 +113,7 @@ jobs:
       - name: Prepare release assets
         run: |
           mkdir -p release
-          find ./artifacts -type f -exec mv {} ./release/ \;
-          chmod +x release/christmas_tree-linux-* release/christmas_tree-macos-* 2>/dev/null || true
+          find ./artifacts -type f \( -name "*.tar.gz" -o -name "*.zip" \) -exec mv {} ./release/ \;
           ls -lh ./release
 
       - name: Create Release
@@ -108,23 +126,24 @@ jobs:
           body: |
             ## 🎄 Christmas Tree Terminal Animation
 
-            Download the appropriate binary for your platform:
-            - **Linux AMD64**: `christmas_tree-linux-amd64`
-            - **Linux ARM64**: `christmas_tree-linux-arm64`
-            - **macOS Intel**: `christmas_tree-macos-amd64`
-            - **macOS Apple Silicon (M1/M2)**: `christmas_tree-macos-arm64`
-            - **Windows**: `christmas_tree-windows-amd64.exe`
+            Download the appropriate archive for your platform:
+            - **Linux AMD64**: `christmas_tree-linux-amd64.tar.gz`
+            - **Linux ARM64**: `christmas_tree-linux-arm64.tar.gz`
+            - **macOS Intel**: `christmas_tree-macos-amd64.tar.gz`
+            - **macOS Apple Silicon (M1/M2)**: `christmas_tree-macos-arm64.tar.gz`
+            - **Windows**: `christmas_tree-windows-amd64.exe.zip`
 
             ### Usage
             ```bash
-            # Linux/macOS - make executable first
-            chmod +x christmas_tree-*
+            # Linux/macOS - extract and run
+            tar -xzf christmas_tree-linux-amd64.tar.gz
             ./christmas_tree-linux-amd64
 
             # With custom name
             ./christmas_tree-linux-amd64 -name "YourName"
 
-            # Windows
+            # Windows - extract and run
+            # Extract the zip file, then:
             christmas_tree-windows-amd64.exe
             ```
 
